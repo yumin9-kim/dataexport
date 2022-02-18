@@ -1,0 +1,38 @@
+---
+title: "Data Report"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(data.table); library(tidyverse); library(tableone); library(ggplot2)
+library(knitr)
+url <- "https://raw.githubusercontent.com/jinseob2kim/lecture-snuhlab/master/data/example_g1e.csv"
+g1e <- fread(url,header=T)
+```
+
+## 흡연 여부와 혈압
+
+아래는 2009년 건강검진 결과, 흡연 여부에 따른 수축기혈압과 이완기혈압의 평균을 나타낸 표이다.  
+*(1- 흡연하지 않음, 2- 이전에는 흡연했으나 현재는 끊었음, 3- 현재 흡연중)*
+
+```{r smk, include=F}
+smk <- g1e[EXMD_BZ_YYYY==2009] %>% CreateTableOne(vars=c("BP_SYS", "BP_DIA"), strata="Q_SMK_YN") %>% print(quote=F, noSpaces=T) %>% as.data.frame()
+```
+```{r print_smk}
+kable(smk)
+```
+
+## 연도별 흡연자 비율
+
+아래는 2009년부터 2015년까지 연도별 흡연자 비율의 변화를 나타낸 그래프이다.  
+*(1- 흡연하지 않음, 2- 이전에는 흡연했으나 현재는 끊었음, 3- 현재 흡연중)*
+```{r smk_plot}
+smk_plot <- g1e[,':='(Year=as.factor(EXMD_BZ_YYYY), smk=as.factor(Q_SMK_YN))] %>% ggplot(aes(x=Year, fill=smk)) + geom_bar(position='fill')
+print(smk_plot)
+```
+
+
+
